@@ -133,6 +133,8 @@ export default function BlacklistManagement() {
   const [newUid, setNewUid] = useState("");
   const [detectedUserType, setDetectedUserType] = useState<"商家" | "普通用户" | null>(null);
   const [selectedRestrictions, setSelectedRestrictions] = useState<string[]>([]);
+  const [newBlacklistDuration, setNewBlacklistDuration] = useState<"永久" | "按天限制">("永久");
+  const [newBlacklistDays, setNewBlacklistDays] = useState("");
 
   // 权限限制表单
   const [restrictionType, setRestrictionType] = useState<string[]>([]);
@@ -601,6 +603,35 @@ export default function BlacklistManagement() {
                 </div>
               </div>
             )}
+            <div className="space-y-3">
+              <Label>限制时间</Label>
+              <RadioGroup value={newBlacklistDuration} onValueChange={(value: any) => setNewBlacklistDuration(value)}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="永久" id="duration-permanent" />
+                  <label htmlFor="duration-permanent" className="text-sm font-medium cursor-pointer">
+                    永久
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="按天限制" id="duration-days" />
+                  <label htmlFor="duration-days" className="text-sm font-medium cursor-pointer">
+                    按天限制
+                  </label>
+                </div>
+              </RadioGroup>
+              {newBlacklistDuration === "按天限制" && (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    placeholder="请输入天数"
+                    value={newBlacklistDays}
+                    onChange={(e) => setNewBlacklistDays(e.target.value)}
+                    className="flex-1"
+                  />
+                  <span className="text-sm text-gray-500">天</span>
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
