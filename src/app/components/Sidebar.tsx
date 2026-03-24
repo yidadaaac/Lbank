@@ -7,6 +7,7 @@ import {
   LogOut,
   FileText,
   Shield,
+  ShieldAlert,
   CreditCard,
   Database,
   TrendingUp,
@@ -27,26 +28,51 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   {
-    id: "risk-tags",
-    label: "风控标签配置",
-    icon: <FileText className="w-4 h-4" />,
+    id: "fiat-business",
+    label: "法币业务",
+    icon: <CreditCard className="w-4 h-4" />,
     children: [
       {
-        id: "p2p-risk",
-        label: "P2P风险标签",
-        path: "/",
+        id: "p2p-business",
+        label: "P2P业务管理",
+        children: [
+          {
+            id: "blacklist",
+            label: "P2P黑名单管理",
+            path: "/blacklist",
+          },
+        ],
       },
       {
-        id: "otc-risk",
-        label: "OTC风险标签",
-        path: "/otc-risk-tags",
+        id: "new-system-business",
+        label: "法币新系统业务管理",
+        children: [
+          {
+            id: "risk-tags",
+            label: "风控标签配置",
+            children: [
+              {
+                id: "p2p-risk",
+                label: "P2P风险标签",
+                path: "/",
+              },
+              {
+                id: "otc-risk",
+                label: "OTC风险标签",
+                path: "/otc-risk-tags",
+              },
+            ],
+          },
+        ],
       },
     ],
   },
 ];
 
 export default function Sidebar() {
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(["risk-tags"]));
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(
+    new Set(["fiat-business", "new-system-business", "risk-tags"])
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
 
@@ -62,17 +88,21 @@ export default function Sidebar() {
     });
   };
 
-  const renderMenuItem = (item: MenuItem) => {
+  const renderMenuItem = (item: MenuItem, depth: number = 0): React.ReactNode => {
     const hasChildren = item.children && item.children.length > 0;
     const isExpanded = expandedItems.has(item.id);
     const isActive = location.pathname === item.path;
+
+    // Calculate padding based on depth (in pixels)
+    const paddingLeft = depth === 0 ? 16 : 16 + depth * 16;
 
     return (
       <div key={item.id}>
         {item.path ? (
           <Link
             to={item.path}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm transition-colors ${
+            style={{ paddingLeft: `${paddingLeft}px` }}
+            className={`flex items-center gap-2 pr-4 py-2.5 text-sm transition-colors ${
               isActive
                 ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
                 : "text-gray-700 hover:bg-gray-100"
@@ -84,7 +114,8 @@ export default function Sidebar() {
         ) : (
           <button
             onClick={() => hasChildren && toggleExpanded(item.id)}
-            className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 w-full transition-colors"
+            style={{ paddingLeft: `${paddingLeft}px` }}
+            className={`flex items-center gap-2 pr-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 w-full transition-colors`}
           >
             {item.icon}
             <span className="flex-1 text-left">{item.label}</span>
@@ -97,21 +128,8 @@ export default function Sidebar() {
           </button>
         )}
         {hasChildren && isExpanded && (
-          <div className="bg-gray-50">
-            {item.children!.map((child) => (
-              <Link
-                key={child.id}
-                to={child.path!}
-                className={`flex items-center gap-2 pl-12 pr-4 py-2.5 text-sm transition-colors ${
-                  location.pathname === child.path
-                    ? "bg-blue-50 text-blue-600 border-l-4 border-blue-600"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                {child.icon}
-                <span className="flex-1">{child.label}</span>
-              </Link>
-            ))}
+          <div className={depth === 0 ? "bg-gray-50" : ""}>
+            {item.children!.map((child) => renderMenuItem(child, depth + 1))}
           </div>
         )}
       </div>
